@@ -1,16 +1,18 @@
 'use strict';
 /* eslint-env node */
 
+require('dotenv').config();
 const Merge = require('broccoli-merge-trees');
 const Sass = require('broccoli-sass-source-maps');
 const LiveReload = require('broccoli-inject-livereload');
 const Autoprefixer = require('broccoli-autoprefixer');
 const CssOptimizer = require('broccoli-csso');
-const Funnel = require('broccoli-funnel');
 const Babel = require('broccoli-babel-transpiler');
 const mv = require('broccoli-stew').mv;
 const rm = require('broccoli-stew').rm;
 const browserify = require('broccoli-browserify-cache');
+const vueify = require('vueify');
+const envify = require('envify');
 
 let pubFiles = new LiveReload('public');
 
@@ -29,6 +31,11 @@ const babelScript = new Babel(appNoSass);
 const appScript = browserify(babelScript, {
   entries: ['./index'],
   outputFile: 'app.js',
+
+  config(browserify) {
+    browserify.transform(vueify);
+    browserify.transform(envify);
+  },
 });
 
 const compiledSass = new Sass(stylePaths, 'app.scss', 'app.css', {});
