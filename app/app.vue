@@ -13,7 +13,7 @@
     <div class="comments">
       <ul>
         <li v-for="comment in comments">
-          <p class="comment-author">{{ comment.author }}</p>
+          <p class="comment-author">{{ comment.author }} - {{ comment.date }}</p>
           <p>{{ comment.body }}</p>
         </li>
       </ul>
@@ -48,9 +48,17 @@ export default Vue.extend({
 
   mounted() {
     this.getNasaData();
+    this.getComments();
   },
 
   methods: {
+    getComments() {
+      fetch('http://tiny-tn.herokuapp.com/collections/nasa-comments?limit=100')
+        .then((r) => r.json())
+        .then((data) => {
+          this.comments = data;
+        });
+    },
     getNasaData() {
       const dateFormatted = this.date.format('YYYY-MM-DD');
 
