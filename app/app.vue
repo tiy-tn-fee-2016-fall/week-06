@@ -1,14 +1,28 @@
 <template lang="html">
   <div class="app">
-
     <h1>{{ apod.title }}</h1>
 
     <div class="img-switcher">
-      <button class="btn" v-on:click="goBack()">Back</button>
+      <button class="btn" @click="goBack()">Back</button>
       <div class="frame">
         <img :src="apod.url" :alt="apod.title"/>
       </div>
-      <button class="btn" v-on:click="goForward()">Forward</button>
+      <button class="btn" @click="goForward()">Forward</button>
+    </div>
+
+    <div class="comments">
+      <ul>
+        <li v-for="comment in comments">
+          <p class="comment-author">{{ comment.author }}</p>
+          <p>{{ comment.body }}</p>
+        </li>
+      </ul>
+
+      <form @submit.prevent="saveComment(form.author, form.body)">
+        <input type="text" v-model="form.author">
+        <textarea rows="8" cols="40" v-model="form.body"></textarea>
+        <button>Submit</button>
+      </form>
     </div>
   </div>
 </template>
@@ -25,6 +39,10 @@ export default Vue.extend({
       date: moment(),
       apod: {},
       comments: [],
+      form: {
+        author: '',
+        body: '',
+      },
     };
   },
 
@@ -57,6 +75,28 @@ export default Vue.extend({
       // Make a new request to the API
       // Reset the "apod" value
       this.getNasaData();
+    },
+
+    saveComment(author, body) {
+      fetch('http://tiny-tn.herokuapp.com/collections/nasa-comments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          author, body,
+          date: this.date.format('YYYY-MM-DD')
+        }),
+      })
+      .then(r => r.json())
+      .then((comment) => {
+        this.comments = [comment, ...this.comments];
+      });
+
+      this.form = {
+        author: '',
+        body: '',
+      };
     }
   }
 });
